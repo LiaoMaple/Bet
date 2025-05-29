@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>賭盤計算器</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #ccc;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+    }
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+    }
+    .result {
+      margin-top: 20px;
+      background: #e0f0ff;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h2>賭盤計算器</h2>
+
+  <label for="teamA">隊伍 A 名稱</label>
+  <input type="text" id="teamA" value="隊伍A" />
+
+  <label for="teamB">隊伍 B 名稱</label>
+  <input type="text" id="teamB" value="隊伍B" />
+
+  <label for="margin">抽水利潤率 (%)</label>
+  <input type="number" id="margin" value="10" min="0" max="100" />
+
+  <label for="amountA">隊伍 A 投注金額</label>
+  <input type="number" id="amountA" value="0" min="0" />
+
+  <label for="amountB">隊伍 B 投注金額</label>
+  <input type="number" id="amountB" value="0" min="0" />
+
+  <div class="result">
+    <p id="oddsA">隊伍A 賠率：-</p>
+    <p id="oddsB">隊伍B 賠率：-</p>
+    <p id="profit">莊家預期利潤：-</p>
+  </div>
+
+  <script>
+    function calculate() {
+      const teamA = document.getElementById('teamA').value || '隊伍A';
+      const teamB = document.getElementById('teamB').value || '隊伍B';
+      let margin = parseFloat(document.getElementById('margin').value);
+      if (isNaN(margin) || margin < 0) margin = 0;
+      if (margin > 100) margin = 100;
+      margin = margin / 100;
+
+      const amountA = parseFloat(document.getElementById('amountA').value) || 0;
+      const amountB = parseFloat(document.getElementById('amountB').value) || 0;
+
+      const total = amountA + amountB;
+      if (total === 0) {
+        document.getElementById('oddsA').textContent = `${teamA} 賠率：-`;
+        document.getElementById('oddsB').textContent = `${teamB} 賠率：-`;
+        document.getElementById('profit').textContent = `莊家預期利潤：-`;
+        return;
+      }
+
+      // 計算扣除抽水後的有效池金
+      const effectivePool = total * (1 - margin);
+
+      // 賠率 = 有效池 / 該隊投注額
+      const oddsA = amountA > 0 ? effectivePool / amountA : 0;
+      const oddsB = amountB > 0 ? effectivePool / amountB : 0;
+
+      document.getElementById('oddsA').textContent = `${teamA} 賠率：${oddsA.toFixed(2)}`;
+      document.getElementById('oddsB').textContent = `${teamB} 賠率：${oddsB.toFixed(2)}`;
+
+      // 莊家利潤 = 抽水率乘總投注金額
+      const profit = total * margin;
+      document.getElementById('profit').textContent = `莊家預期利潤：${profit.toFixed(2)} 元`;
+    }
+
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => input.addEventListener('input', calculate));
+
+    calculate();
+  </script>
+</body>
+</html>
